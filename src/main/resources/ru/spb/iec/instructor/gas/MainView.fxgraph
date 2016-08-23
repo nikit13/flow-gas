@@ -1,0 +1,380 @@
+package ru.spb.iec.instructor.gas
+
+import javafx.scene.layout.VBox
+import javafx.scene.layout.BorderPane
+import javafx.scene.control.MenuBar
+import javafx.scene.control.Menu
+import javafx.scene.control.MenuItem
+import javafx.scene.control.SeparatorMenuItem
+import javafx.scene.control.TitledPane
+import javafx.scene.control.ToggleGroup
+import javafx.scene.chart.LineChart
+import javafx.scene.chart.NumberAxis
+import javafx.scene.control.Label
+import javafx.scene.control.Slider
+import javafx.scene.control.Tooltip
+import ru.spb.iec.instructor.gas.FlowGas
+import javafx.scene.control.Spinner
+import javafx.scene.control.RadioButton
+import javafx.geometry.Insets
+import javafx.scene.image.ImageView
+import javafx.scene.image.Image
+import javafx.scene.layout.GridPane
+import javafx.scene.control.TextField
+import javafx.scene.text.TextFlow
+
+component MainView controlledby FlowGas {
+	define ToggleGroup id nozzleType BorderPane {
+	// меню приложения
+		top : MenuBar {
+			menus : [
+				Menu {
+					text : "Программа",
+					items : [
+						MenuItem {
+							text : "Рассчитать",
+							accelerator : "CTRL+A",
+							onAction : controllermethod drawGraphics
+						},
+						MenuItem {
+							text : "Очистить графики",
+							accelerator : "CTRL+Q",
+							onAction : controllermethod clearGraphics
+						},
+						SeparatorMenuItem,
+						MenuItem {
+							text : "Выход",
+							accelerator : "CTRL+X",
+							onAction : controllermethod exitApplication
+						}
+					]
+				}
+				//				,
+				//				Menu {
+				//					text : "Информация",
+				//					items : [
+				//						MenuItem {
+				//							text : "Авторы (test)",
+				//							accelerator : "CTRL+O"
+				//						}
+				//					]
+				//				}
+
+			]
+		},
+
+		// входные и выходные данные
+		left : VBox {
+			children : [
+				TitledPane {
+					text : "Входные данные",
+					collapsible : false,
+					// элементы ввода данных
+					content : VBox {
+						children : [
+							Label id fullPLabel {
+								tooltip : Tooltip {
+									text : "Полное манометрическое давление на входе в реактивное сопло"
+								}
+							},
+							Slider id fullP {
+								orientation : "HORIZONTAL",
+								min : 0,
+								max : 5.00,
+								value : 0,
+								valueChanging : true,
+								tooltip : Tooltip {
+									text : "Установите полное давление"
+								},
+								showTickLabels : true,
+								showTickMarks : true,
+								majorTickUnit : 1.25,
+								minorTickCount : 5,
+								snapToTicks : true,
+								blockIncrement : 10
+							},
+							Label id fullTLabel {
+								tooltip : Tooltip {
+									text : "Температура газа полная"
+								}
+							},
+							Slider id fullT {
+								orientation : "HORIZONTAL",
+								min : 288,
+								max : 900,
+								value : 288,
+								valueChanging : true,
+								tooltip : Tooltip {
+									text : "Установите полную температуру"
+								},
+								showTickLabels : true,
+								showTickMarks : true,
+								majorTickUnit : 153,
+								minorTickCount : 5,
+								snapToTicks : true,
+								blockIncrement : 10
+							},
+							Label {
+								text : "Высота полета, км"
+							},
+							Spinner < Integer > id flyHeight {
+								min : 0,
+								max : 12,
+								initialValue : 0
+							},
+							TitledPane {
+								text : "Тип сопла",
+								collapsible : false,
+								content : VBox {
+									RadioButton {
+										text : "Дозвуковое",
+										toggleGroup : idref nozzleType,
+										selected : true,
+										onAction : controllermethod setSubsonicNozzle
+									},
+									RadioButton {
+										text : "Сверхзвуковое",
+										toggleGroup : idref nozzleType,
+										onAction : controllermethod setSupersonicNozzle
+									}
+								}
+							},
+							Label id nozzleDiameterLabel {
+								disable : true,
+								tooltip : Tooltip {
+									text : "Изменение диаметра сопла"
+								}
+							},
+							Slider id nozzleDiameter {
+								disable : true,
+								orientation : "HORIZONTAL",
+								min : 40,
+								max : 70,
+								value : 40,
+								valueChanging : true,
+								tooltip : Tooltip {
+									text : "Изменение диаметра сопла"
+								},
+								showTickLabels : true,
+								showTickMarks : true,
+								majorTickUnit : 10,
+								minorTickCount : 10,
+								snapToTicks : true,
+								blockIncrement : 10
+							}
+						]
+					}
+				},
+				TitledPane {
+					text : "Результаты расчета",
+					collapsible : false,
+					// элементы вывода данных
+					content : GridPane {
+						children : [
+							Label {
+								text : "Gв = ",
+								tooltip : Tooltip {
+									text : "Расход газа через сопло"
+								},
+								static columnIndex : 0,
+								static rowIndex : 0
+							},
+							TextField id gv {
+								tooltip : Tooltip {
+									text : "Расход газа через сопло"
+								},
+								editable : false,
+								static columnIndex : 1,
+								static rowIndex : 0
+							},
+							Label {
+								text : " кг/с",
+								static columnIndex : 2,
+								static rowIndex : 0
+							},
+							Label {
+								text : "П расп = ",
+								tooltip : Tooltip {
+									text : "Располагаемая степень понижения давления в сопле"
+								},
+								static columnIndex : 0,
+								static rowIndex : 1
+							},
+							TextField id availableReduction {
+								tooltip : Tooltip {
+									text : "Располагаемая степень понижения давления в сопле"
+								},
+								editable : false,
+								static columnIndex : 1,
+								static rowIndex : 1
+							},
+							Label {
+								text : "П реал = ",
+								tooltip : Tooltip {
+									text : "Реальная степень понижения давления в сопле"
+								},
+								static columnIndex : 0,
+								static rowIndex : 2
+							},
+							TextField id realReduction {
+								tooltip : Tooltip {
+									text : "Реальная степень понижения давления в сопле"
+								},
+								editable : false,
+								static columnIndex : 1,
+								static rowIndex : 2
+							},
+							TitledPane {
+								text : "Давление статическое в сечениях, Бар",
+								collapsible : false,
+								static columnIndex : 0,
+								static columnSpan : 3,
+								static rowIndex : 3,
+								content : GridPane {
+									children : [
+										Label {
+											text : "P ст = ",
+											static columnIndex : 0,
+											static rowIndex : 0
+										},
+										TextField id staticGaugePressure {
+											tooltip : Tooltip {
+												text : "Статическое манометрическое давление во входном течении сопла"
+											},
+											editable : false,
+											static columnIndex : 1,
+											static rowIndex : 0
+										},
+										Label {
+											text : "P абс = ",
+											static columnIndex : 0,
+											static rowIndex : 1
+										},
+										TextField id staticAbsolutePressure {
+											tooltip : Tooltip {
+												text : "Статическое абсолютное давление на срезе сопла"
+											},
+											editable : false,
+											static columnIndex : 1,
+											static rowIndex : 1
+										},
+										Label id gaugePressureLabel {
+											text : "P ман = ",
+											static columnIndex : 0,
+											static rowIndex : 2
+										},
+										TextField id gaugePressure {
+											tooltip : Tooltip {
+												text : "Манометрическое давление на срезе сверхзвукового сопла"
+											},
+											editable : false,
+											static columnIndex : 1,
+											static rowIndex : 2
+										}
+									]
+								}
+							},
+							Label {
+								text : "Ph атм = ",
+								tooltip : Tooltip {
+									text : "Абсолютное атмосферное давление"
+								},
+								static columnIndex : 0,
+								static rowIndex : 4
+							},
+							TextField id ph {
+								tooltip : Tooltip {
+									text : "Абсолютное атмосферное давление"
+								},
+								static columnIndex : 1,
+								static rowIndex : 4
+							},
+							Label {
+								text : " Бар",
+								static columnIndex : 2,
+								static rowIndex : 4
+							}
+						]
+					}
+				}
+			]
+		},
+		// графики
+		center : VBox {
+			children : [
+				LineChart < Double, Double > id temperatureGraphic {
+					title : "Температура",
+					animated : true,
+					xAxis : NumberAxis {
+						label : "S, м",
+						lowerBound : 0,
+						upperBound : 1,
+						animated : true
+					},
+					yAxis : NumberAxis {
+						label : "T, K",
+						lowerBound : 0,
+						upperBound : 900,
+						animated : true
+					},
+					axisSortingPolicy : "NONE"
+				},
+
+				LineChart < Double, Double > id pressureGraphic {
+					title : "Давление",
+					animated : true,
+					xAxis : NumberAxis {
+						label : "S, м",
+						lowerBound : 0,
+						upperBound : 1,
+						animated : true
+					},
+					yAxis : NumberAxis {
+						label : "P, Бар",
+						lowerBound : 0,
+						upperBound : 900,
+						animated : true
+					},
+					axisSortingPolicy : "NONE"
+				},
+
+				LineChart < Double, Double > id accelerationGraphic {
+					title : "Скорость",
+					animated : true,
+					xAxis : NumberAxis {
+						label : "S, м",
+						lowerBound : 0,
+						upperBound : 1,
+						animated : true
+					},
+					yAxis : NumberAxis {
+						label : "v, м/с",
+						lowerBound : 0,
+						upperBound : 900,
+						animated : true
+					},
+					axisSortingPolicy : "NONE"
+				}
+			]
+		},
+		// информация
+		right : TitledPane {
+			text : "Справочная информация",
+			collapsible : false,
+			content : VBox {
+				children : [
+					ImageView {
+						image : Image {
+							url : location "/pictures/Formuls_gas_din.png"
+						}
+					},
+					ImageView {
+						image : Image {
+							url : location "/pictures/trd.png"
+						}
+					}
+				]
+			}
+		}
+	}
+}
